@@ -21,7 +21,7 @@ def experiment_entry(*args, **kwargs):
                 df.loc[len(df.index)] = save_info
             df.index = ["Experiment " + str(i+1) + ":" for i in range(len(df.index))]
             styled_df = df.style.format({'Model Output': lambda x: f'<span style="background-color: yellow">{x}</span>'})
-            print(styled_df)
+            # print(styled_df)
 
             # TODO: download csv & save into output folder
 
@@ -30,12 +30,12 @@ def experiment_entry(*args, **kwargs):
         return wrapper
     return inner_decorator
 
-p1 = [1, 2, 3]
-p2 = [4, 5, 6]
-# every_combination = False
+# p1 = [1, 2, 3]
+# p2 = [4, 5, 6]
+# # every_combination = False
 
-@experiment_entry(p1=p1, p2=p2)
-def model(p1=p1, p2=p2):
-    print("Inside the function.")
+# @experiment_entry(p1=p1, p2=p2)
+# def model(p1=p1, p2=p2):
+#     print("Inside the function.")
 
-model(p1=p1, p2=p2)
+# model(p1=p1, p2=p2)
