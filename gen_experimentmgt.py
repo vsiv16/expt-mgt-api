@@ -119,7 +119,15 @@ def serialise(filename, cwd, current_saving_folder):
         new_file.write(serialized_file)
 
 def save_output(df, current_saving_folder, func):
-    output_file_path = os.path.expanduser(current_saving_folder + "/" + str(func) + "_out.csv")
+   # Find the index of the first space character
+    func_string = str(func)
+    first_space = func_string.find(" ")
+    second_space = func_string.find(" ", first_space + 1)
+
+    # Extract the substring between the first and second space characters
+    func_name = func_string[first_space+1:second_space]
+
+    output_file_path = os.path.expanduser(current_saving_folder + "/" + func_name + "_out.csv")
     df.to_csv(output_file_path) 
 
 
