@@ -1,12 +1,35 @@
 import itertools
 import pandas as pd
+import os
+from datetime import datetime
+import pickle
 
 def experiment_entry(**params):
     def decorator(func):
         def wrapper(*args, **kwargs): # args, kwargs empty initially
 
             # TODO: create new output folder -- named "Run_timestamp"
+            # Get the current working directory path
+            cwd = os.getcwd()
+            log_records_path = os.path.expanduser(cwd + "/.log_records")
+
+            # Create the directory if it doesn't exist already
+            if not os.path.exists(log_records_path):
+                os.makedirs(log_records_path)
+
+            # Current timestamp
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+            current_saving_folder = os.path.expanduser(cwd + "/.log_records/run_" + timestamp)
+            if not os.path.exists(current_saving_folder):
+                os.makedirs(current_saving_folder)
+
             # TODO: save a copy of user's code in output folder -- named "Version_timestamp??"
+            # Go through all files in the current working directory
+            serialise_all_files(cwd, current_saving_folder)
+            
+            # Serialise them and save in current_saving_folder
+
+    
 
             #######################################################################
             # print("PARAMS: ", params) # dictionary (param name: param value)
@@ -55,8 +78,50 @@ def experiment_entry(**params):
             # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ #
 
             # TODO: download csv & save into output folder
+            save_output(df, current_saving_folder, func)
 
             return styled_df
 
         return wrapper
     return decorator
+
+
+def serialise_all_files(cwd, current_saving_folder):
+    for filename in os.listdir(cwd):
+        # print(filename)
+        if filename[0] == '.':
+            continue
+        f = os.path.join(cwd, filename)
+        # checking if it is a file
+        if os.path.isfile(f):
+            serialise(filename, cwd, current_saving_folder)
+        else:
+            # print("recursion")
+            serialise_all_files(f, current_saving_folder)
+
+
+def serialise(filename, cwd, current_saving_folder):
+    # print("File to be serialised ", filename)
+    # open the file for reading
+    with open(os.path.join(cwd, filename), 'rb') as file:
+        # read the contents of the file
+        file_contents = file.read()
+
+    # serialize the data using pickle
+    serialized_file = pickle.dumps(file_contents)
+
+    # open a new file for writing
+    dir_to_be_saved_in = current_saving_folder + cwd
+    if not os.path.exists(dir_to_be_saved_in):
+        os.makedirs(dir_to_be_saved_in)
+    with open(dir_to_be_saved_in+"/"+filename+'.pickle', 'wb') as new_file:
+        # write the serialized data to the new file
+        new_file.write(serialized_file)
+
+def save_output(df, current_saving_folder, func):
+    output_file_path = os.path.expanduser(current_saving_folder + "/" + str(func) + "_out.csv")
+    df.to_csv(output_file_path) 
+
+
+
+
