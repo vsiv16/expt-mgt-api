@@ -2,7 +2,7 @@ import itertools
 import pandas as pd
 import os
 from datetime import datetime
-import pickle
+import shutil
 
 def experiment_entry(**params):
     def decorator(func):
@@ -25,11 +25,7 @@ def experiment_entry(**params):
 
             # TODO: save a copy of user's code in output folder -- named "Version_timestamp??"
             # Go through all files in the current working directory
-            serialise_all_files(cwd, current_saving_folder)
-            
-            # Serialise them and save in current_saving_folder
-
-    
+            save_all_files(cwd, current_saving_folder)
 
             #######################################################################
             # print("PARAMS: ", params) # dictionary (param name: param value)
@@ -86,7 +82,8 @@ def experiment_entry(**params):
     return decorator
 
 
-def serialise_all_files(cwd, current_saving_folder):
+def save_all_files(cwd, current_saving_folder):
+    current_saving_folder=os.path.join(current_saving_folder, os.path.basename(cwd))
     for filename in os.listdir(cwd):
         # print(filename)
         if filename[0] == '.':
@@ -94,29 +91,22 @@ def serialise_all_files(cwd, current_saving_folder):
         f = os.path.join(cwd, filename)
         # checking if it is a file
         if os.path.isfile(f):
-            serialise(filename, cwd, current_saving_folder)
+            save_file(filename, cwd, current_saving_folder)
         else:
             # print("recursion")
-            serialise_all_files(f, current_saving_folder)
+            save_all_files(f, current_saving_folder)
 
 
-def serialise(filename, cwd, current_saving_folder):
+def save_file(filename, cwd, current_saving_folder):
     # print("File to be serialised ", filename)
     # open the file for reading
-    with open(os.path.join(cwd, filename), 'rb') as file:
-        # read the contents of the file
-        file_contents = file.read()
+    source_file = os.path.join(cwd, filename)
 
-    # serialize the data using pickle
-    serialized_file = pickle.dumps(file_contents)
+    if not os.path.exists(current_saving_folder):
+        os.makedirs(current_saving_folder)
+    destination_file = os.path.join(current_saving_folder, filename)
+    shutil.copyfile(source_file, destination_file)
 
-    # open a new file for writing
-    dir_to_be_saved_in = current_saving_folder + cwd
-    if not os.path.exists(dir_to_be_saved_in):
-        os.makedirs(dir_to_be_saved_in)
-    with open(dir_to_be_saved_in+"/"+filename+'.pickle', 'wb') as new_file:
-        # write the serialized data to the new file
-        new_file.write(serialized_file)
 
 def save_output(df, current_saving_folder, func):
    # Find the index of the first space character
